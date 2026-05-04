@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Job Displacement Risk Analysis - বাংলা</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', 'Noto Sans Bengali', Tahoma, sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        
+        /* Header */
+        .header {
+            text-align: center;
+            padding: 40px 20px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 20px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .header h1 {
+            font-size: 2.2em;
+            color: #38bdf8;
+            margin-bottom: 10px;
+        }
+        .header p {
+            font-size: 1.1em;
+            color: #94a3b8;
+        }
+        
+        /* Legend */
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 18px;
+            border-radius: 12px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .legend-box {
+            width: 20px; height: 20px;
+            border-radius: 5px;
+        }
+        .red { background: #ef4444; }
+        .green { background: #22c55e; }
+        .yellow { background: #eab308; }
+        
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            padding: 20px;
+            border-radius: 16px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .stat-card.red-card { background: rgba(239,68,68,0.15); }
+        .stat-card.green-card { background: rgba(34,197,94,0.15); }
+        .stat-card.yellow-card { background: rgba(234,179,8,0.15); }
+        .stat-card.blue-card { background: rgba(56,189,248,0.15); }
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .stat-label { font-size: 0.9em; opacity: 0.8; }
+        
+        /* Section */
+        .section {
+            margin-bottom: 30px;
+            border-radius: 20px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .section-header {
+            padding: 18px 25px;
+            font-size: 1.3em;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .section-header.red-header { background: rgba(239,68,68,0.25); color: #fca5a5; }
+        .section-header.green-header { background: rgba(34,197,94,0.25); color: #86efac; }
+        .section-header.yellow-header { background: rgba(234,179,8,0.25); color: #fde047; }
+        
+        /* Table */
+        .table-wrapper {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 700px;
+        }
+        th, td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+        th {
+            background: rgba(255,255,255,0.04);
+            font-weight: 600;
+            color: #38bdf8;
+            font-size: 0.85em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+        tr:hover { background: rgba(255,255,255,0.03); }
+        .risk-badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+        .risk-high { background: rgba(239,68,68,0.3); color: #fca5a5; }
+        .risk-med { background: rgba(234,179,8,0.3); color: #fde047; }
+        .risk-low { background: rgba(34,197,94,0.3); color: #86efac; }
+        .job-count { color: #7dd3fc; font-weight: 600; white-space: nowrap; }
+        td { font-size: 0.95em; line-height: 1.5; }
+        
+        /* Preparation Section */
+        .prep-section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .prep-section h2 {
+            color: #38bdf8;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+        .prep-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 18px;
+            margin-top: 20px;
+        }
+        .prep-card {
+            background: rgba(255,255,255,0.03);
+            padding: 18px;
+            border-radius: 12px;
+            border-left: 4px solid #38bdf8;
+        }
+        .prep-card h3 {
+            color: #fde047;
+            margin-bottom: 8px;
+            font-size: 1.05em;
+        }
+        .prep-card p {
+            color: #cbd5e1;
+            line-height: 1.6;
+            font-size: 0.92em;
+        }
+        
+        .word-box {
+            background: rgba(56,189,248,0.1);
+            border: 2px solid rgba(56,189,248,0.3);
+            border-radius: 16px;
+            padding: 22px;
+            margin-top: 25px;
+        }
+        .word-box h3 {
+            color: #38bdf8;
+            margin-bottom: 12px;
+        }
+        .word-box p {
+            line-height: 1.8;
+            color: #e2e8f0;
+            text-align: justify;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #64748b;
+            font-size: 0.85em;
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 { font-size: 1.6em; }
+            .section-header { font-size: 1.1em; padding: 14px 18px; }
+            .prep-grid { grid-template-columns: 1fr; }
+            .prep-section { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        
+        <div class="header">
+            <h1>🤖 AI Job Displacement Risk Analysis</h1>
+            <p>কোন চাকরি AI দখল করবে এবং কোনটি নিরাপদ -- সম্পূর্ণ বিশ্লেষণ</p>
+        </div>
+        
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-box red"></div>
+                <span><b>লাল (High Risk)</b> -- AI দ্বারা দখল</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-box yellow"></div>
+                <span><b>হলুদ (Medium Risk)</b> -- আংশিক ঝুঁকি</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-box green"></div>
+                <span><b>সবুজ (Low Risk)</b> -- AI দখল করতে পারবে না</span>
+            </div>
+        </div>
+        
+        <div class="stats-grid">
+            <div class="stat-card red-card">
+                <div class="stat-number" style="color:#fca5a5;">৩৫.২M</div>
+                <div class="stat-label">লাল ঝুঁকিতে মোট চাকরি</div>
+            </div>
+            <div class="stat-card green-card">
+                <div class="stat-number" style="color:#86efac;">৪২.৮M</div>
+                <div class="stat-label">সবুজ নিরাপদ চাকরি</div>
+            </div>
+            <div class="stat-card yellow-card">
+                <div class="stat-number" style="color:#fde047;">৮.৫M</div>
+                <div class="stat-label">হলুদ মাঝারি ঝুঁকি</div>
+            </div>
+            <div class="stat-card blue-card">
+                <div class="stat-number" style="color:#7dd3fc;">৮৫M</div>
+                <div class="stat-label">২০৩০ সালের মধ্যে প্রভাবিত</div>
+            </div>
+        </div>
+
+        <!-- RED SECTION -->
+        <div class="section">
+            <div class="section-header red-header">
+                🔴 High Risk -- AI দ্বারা দখল হওয়ার ঝুঁকি বেশি (8-10/10)
+            </div>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>পেশা</th>
+                            <th>চাকরি</th>
+                            <th>Score</th>
+                            <th>কেন AI নেবে</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><b>Customer Service Representatives</b></td>
+                            <td class="job-count">2.8M</td>
+                            <td><span class="risk-badge risk-high">9/10</span></td>
+                            <td>চ্যাটবট, ভয়েস AI, অটোমেটেড সাপোর্ট</td>
+                        </tr>
+                        <tr>
+                            <td><b>Secretaries & Administrative Assistants</b></td>
+                            <td class="job-count">3.5M</td>
+                            <td><span class="risk-badge risk-high">8/10</span></td>
+                            <td>ডকুমেন্ট প্রসেসিং, শিডিউলিং AI</td>
+                        </tr>
+                        <tr>
+                            <td><b>General Office Clerks</b></td>
+                            <td class="job-count">2.6M</td>
+                            <td><span class="risk-badge risk-high">9/10</span></td>
+                            <td>ডেটা এন্ট্রি, ফাইল ম্যানেজমেন্ট</td>
+                        </tr>
+                        <tr>
+                            <td><b>Bookkeeping, Accounting Clerks</b></td>
+                            <td class="job-count">1.6M</td>
+                            <td><span class="risk-badge risk-high">9/10</span></td>
+                            <td>QuickBooks AI, অটোমেটেড অ্যাকাউন্টিং</td>
+                        </tr>
+                        <tr>
+                            <td><b>Software Developers</b></td>
+                            <td class="job-count">1.9M</td>
+                            <td><span class="risk-badge risk-high">9/10</span></td>
+                            <td>GitHub Copilot, ChatGPT কোডিং</td>
+                        </tr>
+                        <tr>
+                            <td><b>Financial Clerks</b></td>
+                            <td class="job-count">1.2M</td>
+                            <td><span class="risk-badge risk-high">9/10</span></td>
+                            <td>অটোমেটেড ট্রানজ্যাকশন</td>
+                        </tr>
+                        <tr>
+                            <td><b>Market Research Analysts</b></td>
+                            <td class="job-count">942K</td>
+                            <td><span class="risk-badge risk-high">9/10</span></td>
+                            <td>AI ডেটা অ্যানালাইসিস</td>
+                        </tr>
+                        <tr>
+                            <td><b>Cashiers</b></td>
+                            <td class="job-count">3.2M</td>
+                            <td><span class="risk-badge risk-high">7/10</span></td>
+                            <td>Self-checkout, অটোমেটেড পেমেন্ট</td>
+                        </tr>
+                        <tr>
+                            <td><b>Accountants and Auditors</b></td>
+                            <td class="job-count">1.6M</td>
+                            <td><span class="risk-badge risk-high">8/10</span></td>
+                            <td>AI অডিটিং, ট্যাক প্রিপারেশন</td>
+                        </tr>
+                        <tr>
+                            <td><b>Management Analysts</b></td>
+                            <td class="job-count">1.1M</td>
+                            <td><span class="risk-badge risk-high">7/10</span></td>
+                            <td>AI বিজনেস অ্যানালিটিক্স</td>
+                        </tr>
+                        <tr>
+                            <td><b>Financial Managers</b></td>
+                            <td class="job-count">869K</td>
+                            <td><span class="risk-badge risk-high">7/10</span></td>
+                            <td>AI ফিন্যান্সিয়াল প্ল্যানিং</td>
+                        </tr>
+                        <tr>
+                            <td><b>Sales Managers</b></td>
+                            <td class="job-count">620K</td>
+                            <td><span class="risk-badge risk-high">7/10</span></td>
+                            <td>AI সেলস অ্যানালিটিক্স</td>
+                        </tr>
+                        <tr>
+                            <td><b>Insurance Sales Agents</b></td>
+                            <td class="job-count">589K</td>
+                            <td><span class="risk-badge risk-high">7/10</span></td>
+                            <td>অটোমেটেড ইন্স্যুরেন্স প্ল্যাটফর্ম</td>
+                        </tr>
+                        <tr>
+                            <td><b>Receptionists</b></td>
+                            <td class="job-count">1.0M</td>
+                            <td><span class="risk-badge risk-high">7/10</span></td>
+                            <td>ভার্চুয়াল রিসেপশনিস্ট AI</td>
+                        </tr>
+                        <tr>
+                            <td><b>Information Clerks</b></td>
+                            <td class="job-count">1.3M</td>
+                            <td><span class="risk-badge risk-high">7/10</span></td>
+                            <td>AI নলেজ বেস</td>
+                        </tr>
+                        <tr>
+                            <td><b>Material Recording Clerks</b></td>
+                            <td class="job-count">1.3M</td>
+                            <td><span class="risk-badge risk-high">7/10</span></td>
+                            <td>RFID, অটোমেটেড ইনভেন্টরি</td>
+                        </tr>
+                        <tr>
+                            <td><b>Human Resources Specialists</b></td>
+                            <td class="job-count">944K</td>
+                            <td><span class="risk-badge risk-high">7/10</span></td>
+                            <td>AI রিক্রুটমেন্ট</td>
+                        </tr>
+                        <tr>
+                            <td><b>Project Management Specialists</b></td>
+                            <td class="job-count">1.0M</td>
+                            <td><span class="risk-badge risk-high">7/10</span></td>
+                            <td>AI প্রজেক্ট ট্র্যাকিং</td>
+                        </tr>
+                        <tr>
+                            <td><b>Purchasing Managers</b></td>
+                            <td class="job-count">608K</td>
+                            <td><span class="risk-badge risk-high">7/10</span></td>
+                            <td>AI সাপ্লাই চেইন</td>
+                        </tr>
+                        <tr>
+                            <td><b>Training & Development Specialists</b></td>
+                            <td class="job-count">452K</td>
+                            <td><span class="risk-badge risk-high">7/10</span></td>
+                            <td>AI লার্নিং প্ল্যাটফর্ম</td>
+                        </tr>
+                        <tr>
+                            <td><b>Wholesale & Manufacturing Sales</b></td>
+                            <td class="job-count">1.6M</td>
+                            <td><span class="risk-badge risk-high">7/10</span></td>
+                            <td>B2B AI সেলস টুলস</td>
+                        </tr>
+                        <tr>
+                            <td><b>Postsecondary Teachers</b></td>
+                            <td class="job-count">1.4M</td>
+                            <td><span class="risk-badge risk-high">7/10</span></td>
+                            <td>AI টিউটরিং, অনলাইন কোর্স</td>
+                        </tr>
+                        <tr>
+                            <td><b>Lawyers</b></td>
+                            <td class="job-count">865K</td>
+                            <td><span class="risk-badge risk-high">6/10</span></td>
+                            <td>AI লিগ্যাল রিসার্চ</td>
+                        </tr>
+                        <tr>
+                            <td><b>Kindergarten & Elementary Teachers</b></td>
+                            <td class="job-count">1.5M</td>
+                            <td><span class="risk-badge risk-high">6/10</span></td>
+                            <td>AI টিউটরিং অ্যাপ</td>
+                        </tr>
+                        <tr>
+                            <td><b>Real Estate Brokers</b></td>
+                            <td class="job-count">532K</td>
+                            <td><span class="risk-badge risk-high">6/10</span></td>
+                            <td>AI প্রপার্টি ভ্যালুয়েশন</td>
+                        </tr>
+                        <tr>
+                            <td><b>Security Guards</b></td>
+                            <td class="job-count">1.3M</td>
+                            <td><span class="risk-badge risk-high">5/10</span></td>
+                            <td>AI সার্ভেইল্যান্স</td>
+                        </tr>
+                        <tr>
+                            <td><b>Janitors & Building Cleaners</b></td>
+                            <td class="job-count">2.4M</td>
+                            <td><span class="risk-badge risk-high">1/10</span></td>
+                            <td>রোবোটিক ক্লিনিং (আংশিক)</td>
+                        </tr>
+                        <tr>
+                            <td><b>Teacher Assistants</b></td>
+                            <td class="job-count">1.4M</td>
+                            <td><span class="risk-badge risk-high">4/10</span></td>
+                            <td>AI এডুকেশনাল টুলস (আংশিক)</td>
+                        </tr>
+                        <tr>
+                            <td><b>Postal Service Workers</b></td>
+                            <td class="job-count">500K</td>
+                            <td><span class="risk-badge risk-high">3/10</span></td>
+                            <td>অটোমেটেড সর্টিং (আংশিক)</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- YELLOW SECTION -->
+        <div class="section">
+            <div class="section-header yellow-header">
+                🟡 Medium Risk -- মাঝারি ঝুঁকি (5-6/10)
+            </div>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>পেশা</th>
+                            <th>চাকরি</th>
+                            <th>Score</th>
+                            <th>কেন আংশিক ঝুঁকি</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><b>Property, Real Estate Managers</b></td>
+                            <td class="job-count">466K</td>
+                            <td><span class="risk-badge risk-med">6/10</span></td>
+                            <td>AI ম্যানেজমেন্ট, কিন্তু ক্লায়েন্ট ইন্টারঅ্যাকশন</td>
+                        </tr>
+                        <tr>
+                            <td><b>Advertising, Promotions Managers</b></td>
+                            <td class="job-count">434K</td>
+                            <td><span class="risk-badge risk-med">8/10</span></td>
+                            <td>AI কন্টেন্ট, কিন্তু স্ট্র্যাটেজি মানুষের</td>
+                        </tr>
+                        <tr>
+                            <td><b>Administrative Services Managers</b></td>
+                            <td class="job-count">423K</td>
+                            <td><span class="risk-badge risk-med">6/10</span></td>
+                            <td>অপারেশনাল অটোমেশন, কিন্তু কমপ্লেক্স ডিসিশন</td>
+                        </tr>
+                        <tr>
+                            <td><b>Computer & Information Systems Managers</b></td>
+                            <td class="job-count">667K</td>
+                            <td><span class="risk-badge risk-med">7/10</span></td>
+                            <td>AI IT ম্যানেজমেন্ট, কিন্তু স্ট্র্যাটেজিক প্ল্যানিং</td>
+                        </tr>
+                        <tr>
+                            <td><b>Medical & Health Services Managers</b></td>
+                            <td class="job-count">616K</td>
+                            <td><span class="risk-badge risk-med">6/10</span></td>
+                            <td>হেলথকেয়ার AI, কিন্তু রেগুলেটরি ব্যারিয়ার</td>
+                        </tr>
+                        <tr>
+                            <td><b>Heavy & Tractor-Trailer Truck Drivers</b></td>
+                            <td class="job-count">2.2M</td>
+                            <td><span class="risk-badge risk-med">5/10</span></td>
+                            <td>অটোনোমাস ট্রাকিং, কিন্তু রেগুলেশন</td>
+                        </tr>
+                        <tr>
+                            <td><b>Quality Control Inspectors</b></td>
+                            <td class="job-count">598K</td>
+                            <td><span class="risk-badge risk-med">5/10</span></td>
+                            <td>AI ভিশন, কিন্তু কনটেক্সচুয়াল জাজমেন্ট</td>
+                        </tr>
+                        <tr>
+                            <td><b>Pharmacists</b></td>
+                            <td class="job-count">335K</td>
+                            <td><span class="risk-badge risk-med">5/10</span></td>
+                            <td>অটোমেটেড ডিস্পেন্সিং, কিন্তু কাউন্সেলিং</td>
+                        </tr>
+                        <tr>
+                            <td><b>Nurse Anesthetists</b></td>
+                            <td class="job-count">363K</td>
+                            <td><span class="risk-badge risk-med">5/10</span></td>
+                            <td>AI মনিটরিং, কিন্তু জটিল প্রক্রিয়া</td>
+                        </tr>
+                        <tr>
+                            <td><b>Clinical Laboratory Technologists</b></td>
+                            <td class="job-count">351K</td>
+                            <td><span class="risk-badge risk-med">5/10</span></td>
+                            <td>অটোমেটেড টেস্টিং, কিন্তু ইন্টারপ্রিটেশন</td>
+                        </tr>
+                        <tr>
+                            <td><b>Grounds Maintenance Workers</b></td>
+                            <td class="job-count">1.3M</td>
+                            <td><span class="risk-badge risk-med">4/10</span></td>
+                            <td>রোবোটিক লন মোয়ার, কিন্তু ক্রিয়েটিভিটি</td>
+                        </tr>
+                        <tr>
+                            <td><b>Agricultural Workers</b></td>
+                            <td class="job-count">813K</td>
+                            <td><span class="risk-badge risk-med">3/10</span></td>
+                            <td>অটোনোমাস ট্র্যাক্টর, কিন্তু আবহাওয়া</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- GREEN SECTION -->
+        <div class="section">
+            <div class="section-header green-header">
+                🟢 Low Risk -- AI দখল করতে পারবে না (1-4/10)
+            </div>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>পেশা</th>
+                            <th>চাকরি</th>
+                            <th>Score</th>
+                            <th>কেন AI নিতে পারবে না</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><b>Registered Nurses</b></td>
+                            <td class="job-count">3.4M</td>
+                            <td><span class="risk-badge risk-low">4/10</span></td>
+                            <td>হাতের কাজ, মানবিক স্পর্শ, জরুরি সিদ্ধান্ত</td>
+                        </tr>
+                        <tr>
+                            <td><b>Hand Laborers & Material Movers</b></td>
+                            <td class="job-count">7.0M</td>
+                            <td><span class="risk-badge risk-low">2/10</span></td>
+                            <td>ফিজিক্যাল স্ট্রেংথ, ভেরিয়েবল পরিবেশ</td>
+                        </tr>
+                        <tr>
+                            <td><b>Cooks</b></td>
+                            <td class="job-count">2.8M</td>
+                            <td><span class="risk-badge risk-low">3/10</span></td>
+                            <td>স্বাদ, সৃজনশীলতা, রিয়েল-টাইম অভিজ্ঞতা</td>
+                        </tr>
+                        <tr>
+                            <td><b>Waiters & Waitresses</b></td>
+                            <td class="job-count">2.3M</td>
+                            <td><span class="risk-badge risk-low">3/10</span></td>
+                            <td>হসপিটালিটি, সোশ্যাল ইন্টারঅ্যাকশন</td>
+                        </tr>
+                        <tr>
+                            <td><b>Construction Laborers</b></td>
+                            <td class="job-count">1.6M</td>
+                            <td><span class="risk-badge risk-low">1/10</span></td>
+                            <td>শারীরিক শ্রম, ভেরিয়েবল সাইট</td>
+                        </tr>
+                        <tr>
+                            <td><b>General Maintenance & Repair</b></td>
+                            <td class="job-count">1.6M</td>
+                            <td><span class="risk-badge risk-low">2/10</span></td>
+                            <td>জেনারেলিস্ট প্রবলেম সলভিং</td>
+                        </tr>
+                        <tr>
+                            <td><b>Assemblers & Fabricators</b></td>
+                            <td class="job-count">1.9M</td>
+                            <td><span class="risk-badge risk-low">3/10</span></td>
+                            <td>ফাইন মোটর স্কিল, কোয়ালিটি চেক</td>
+                        </tr>
+                        <tr>
+                            <td><b>Metal & Plastic Workers</b></td>
+                            <td class="job-count">1.0M</td>
+                            <td><span class="risk-badge risk-low">4/10</span></td>
+                            <td>প্রিসিশন ওয়ার্কিং</td>
+                        </tr>
+                        <tr>
+                            <td><b>Carpenters</b></td>
+                            <td class="job-count">950K</td>
+                            <td><span class="risk-badge risk-low">2/10</span></td>
+                            <td>কাস্টম কার্পেন্ট্রি, হাতের দক্ষতা</td>
+                        </tr>
+                        <tr>
+                            <td><b>Electricians</b></td>
+                            <td class="job-count">819K</td>
+                            <td><span class="risk-badge risk-low">2/10</span></td>
+                            <td>বিপজ্জনক কাজ, কোড কমপ্লায়েন্স</td>
+                        </tr>
+                        <tr>
+                            <td><b>Social Workers</b></td>
+                            <td class="job-count">811K</td>
+                            <td><span class="risk-badge risk-low">4/10</span></td>
+                            <td>ইমোশনাল সাপোর্ট, কমপ্লেক্স কেস</td>
+                        </tr>
+                        <tr>
+                            <td><b>Automotive Service Technicians</b></td>
+                            <td class="job-count">808K</td>
+                            <td><span class="risk-badge risk-low">3/10</span></td>
+                            <td>ডায়াগনস্টিক্স, হ্যান্ডস-অন রিপেয়ার</td>
+                        </tr>
+                        <tr>
+                            <td><b>Childcare Workers</b></td>
+                            <td class="job-count">952K</td>
+                            <td><span class="risk-badge risk-low">2/10</span></td>
+                            <td>চাইল্ড কেয়ার, সেফটি, বন্ডিং</td>
+                        </tr>
+                        <tr>
+                            <td><b>Barbers, Hairstylists</b></td>
+                            <td class="job-count">~700K</td>
+                            <td><span class="risk-badge risk-low">2/10</span></td>
+                            <td>ক্রিয়েটিভিটি, পার্সোনালাইজড সার্ভিস</td>
+                        </tr>
+                        <tr>
+                            <td><b>Plumbers, Pipefitters</b></td>
+                            <td class="job-count">505K</td>
+                            <td><span class="risk-badge risk-low">2/10</span></td>
+                            <td>ভেরিয়েবল প্রবলেম সলভিং</td>
+                        </tr>
+                        <tr>
+                            <td><b>Welders, Cutters</b></td>
+                            <td class="job-count">457K</td>
+                            <td><span class="risk-badge risk-low">2/10</span></td>
+                            <td>প্রিসিশন ওয়েল্ডিং, সেফটি</td>
+                        </tr>
+                        <tr>
+                            <td><b>Heating, Air Conditioning Mechanics</b></td>
+                            <td class="job-count">425K</td>
+                            <td><span class="risk-badge risk-low">2/10</span></td>
+                            <td>হোম ভিজিট, কাস্টম সল্যুশন</td>
+                        </tr>
+                        <tr>
+                            <td><b>Animal Care Workers</b></td>
+                            <td class="job-count">439K</td>
+                            <td><span class="risk-badge risk-low">2/10</span></td>
+                            <td>অ্যানিমাল বেহেভিয়ার, ট্রাস্ট</td>
+                        </tr>
+                        <tr>
+                            <td><b>Fitness Trainers</b></td>
+                            <td class="job-count">370K</td>
+                            <td><span class="risk-badge risk-low">3/10</span></td>
+                            <td>পার্সোনালাইজড কোচিং, মোটিভেশন</td>
+                        </tr>
+                        <tr>
+                            <td><b>Delivery Truck Drivers</b></td>
+                            <td class="job-count">1.5M</td>
+                            <td><span class="risk-badge risk-low">3/10</span></td>
+                            <td>লাস্ট-মাইল, কাস্টমার ইন্টারঅ্যাকশন</td>
+                        </tr>
+                        <tr>
+                            <td><b>Food Preparation Workers</b></td>
+                            <td class="job-count">903K</td>
+                            <td><span class="risk-badge risk-low">2/10</span></td>
+                            <td>ফুড হ্যান্ডলিং, স্পিড</td>
+                        </tr>
+                        <tr>
+                            <td><b>Bartenders</b></td>
+                            <td class="job-count">757K</td>
+                            <td><span class="risk-badge risk-low">2/10</span></td>
+                            <td>সোশ্যাল স্কিল, ক্রিয়েটিভ ককটেল</td>
+                        </tr>
+                        <tr>
+                            <td><b>Farmers, Ranchers</b></td>
+                            <td class="job-count">836K</td>
+                            <td><span class="risk-badge risk-low">4/10</span></td>
+                            <td>আবহাওয়া, ভূমি-নির্ভর সিদ্ধান্ত</td>
+                        </tr>
+                        <tr>
+                            <td><b>Construction</b></td>
+                            <td class="job-count">550K</td>
+                            <td><span class="risk-badge risk-low">5/10</span></td>
+                            <td>ফিজিক্যাল লেবার, সাইট-স্পেসিফিক</td>
+                        </tr>
+                        <tr>
+                            <td><b>Dental Assistants</b></td>
+                            <td class="job-count">382K</td>
+                            <td><span class="risk-badge risk-low">3/10</span></td>
+                            <td>হাতের দক্ষতা, রোগী ইন্টারঅ্যাকশন</td>
+                        </tr>
+                        <tr>
+                            <td><b>Industrial Machinery Mechanics</b></td>
+                            <td class="job-count">538K</td>
+                            <td><span class="risk-badge risk-low">3/10</span></td>
+                            <td>কমপ্লেক্স রিপেয়ার, ডায়াগনস্টিক্স</td>
+                        </tr>
+                        <tr>
+                            <td><b>Diesel Service Technicians</b></td>
+                            <td class="job-count">320K</td>
+                            <td><span class="risk-badge risk-low">3/10</span></td>
+                            <td>হেভি মেশিনারি রিপেয়ার</td>
+                        </tr>
+                        <tr>
+                            <td><b>Computer Support Specialists</b></td>
+                            <td class="job-count">521K</td>
+                            <td><span class="risk-badge risk-low">6/10</span></td>
+                            <td>AI টেক সাপোর্ট, কিন্তু কমপ্লেক্স ইস্যু</td>
+                        </tr>
+                        <tr>
+                            <td><b>Network & Computer Systems Admins</b></td>
+                            <td class="job-count">332K</td>
+                            <td><span class="risk-badge risk-low">6/10</span></td>
+                            <td>AI মনিটরিং, কিন্তু সিকিউরিটি</td>
+                        </tr>
+                        <tr>
+                            <td><b>Web Developers</b></td>
+                            <td class="job-count">~200K</td>
+                            <td><span class="risk-badge risk-low">6/10</span></td>
+                            <td>AI ওয়েবসাইট বিল্ডার, কিন্তু কাস্টম</td>
+                        </tr>
+                        <tr>
+                            <td><b>Civil Engineers</b></td>
+                            <td class="job-count">369K</td>
+                            <td><span class="risk-badge risk-low">6/10</span></td>
+                            <td>ফিল্ড ওয়ার্ক, স্ট্রাকচারাল জাজমেন্ট</td>
+                        </tr>
+                        <tr>
+                            <td><b>Industrial Engineers</b></td>
+                            <td class="job-count">351K</td>
+                            <td><span class="risk-badge risk-low">7/10</span></td>
+                            <td>অপ্টিমাইজেশন AI, কিন্তু ইমপ্লিমেন্টেশন</td>
+                        </tr>
+                        <tr>
+                            <td><b>Psychologists</b></td>
+                            <td class="job-count">~200K</td>
+                            <td><span class="risk-badge risk-low">6/10</span></td>
+                            <td>AI থেরাপি, কিন্তু ডিপ থেরাপি</td>
+                        </tr>
+                        <tr>
+                            <td><b>Drafters</b></td>
+                            <td class="job-count">~200K</td>
+                            <td><span class="risk-badge risk-low">6/10</span></td>
+                            <td>AI CAD, কিন্তু কাস্টম ডিজাইন</td>
+                        </tr>
+                        <tr>
+                            <td><b>Substance Abuse Counselors</b></td>
+                            <td class="job-count">~400K</td>
+                            <td><span class="risk-badge risk-low">4/10</span></td>
+                            <td>থেরাপি, ট্রাস্ট বিল্ডিং</td>
+                        </tr>
+                        <tr>
+                            <td><b>Special Education Teachers</b></td>
+                            <td class="job-count">560K</td>
+                            <td><span class="risk-badge risk-low">5/10</span></td>
+                            <td>স্পেশাল নিডস, প্যাটিয়েন্স</td>
+                        </tr>
+                        <tr>
+                            <td><b>Middle School Teachers</b></td>
+                            <td class="job-count">634K</td>
+                            <td><span class="risk-badge risk-low">6/10</span></td>
+                            <td>কিশোরদের বিকাশ, ডিসিপ্লিন</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Preparation Section -->
+        <div class="prep-section">
+            <h2>🛡️ AI যুগে কিভাবে প্রস্তুত থাকবেন?</h2>
+            <div class="prep-grid">
+                <div class="prep-card">
+                    <h3>📚 শেখা চালিয়ে যান</h3>
+                    <p>AI টুলস (ChatGPT, Midjourney, Copilot) ব্যবহার শিখুন। নতুন স্কিল যেমন ডেটা অ্যানালাইসিস, AI প্রম্পট ইঞ্জিনিয়ারিং শেখা শুরু করুন।</p>
+                </div>
+                <div class="prep-card">
+                    <h3>🤝 মানবিক দক্ষতা বাড়ান</h3>
+                    <p>AI যা করতে পারে না -- ইমোশনাল ইন্টেলিজেন্স, ক্রিয়েটিভ থিংকিং, কমিউনিকেশন, লিডারশিপ দক্ষতা উন্নত করুন।</p>
+                </div>
+                <div class="prep-card">
+                    <h3>🔧 হ্যান্ডস-অন স্কিল</h3>
+                    <p>ফিজিক্যাল ও ট্রেড স্কিল (ইলেকট্রিশিয়ান, প্লাম্বিং, কার্পেন্ট্রি, নার্সিং) শেখুন -- এগুলো AI থেকে নিরাপদ।</p>
+                </div>
+                <div class="prep-card">
+                    <h3>🌐 ফ্রিল্যান্সিং ও অনলাইন</h3>
+                    <p>রিমোট ওয়ার্ক এবং ফ্রিল্যান্সিং স্কিল ডেভেলপ করুন। AI টুলস ব্যবহার করে প্রোডাক্টিভিটি বাড়ান।</p>
+                </div>
+                <div class="prep-card">
+                    <h3>💼 এন্ট্রাপ্রেনিউরশিপ</h3>
+                    <p>নিজের ব্যবসা বা স্টার্টআপ শুরু করুন। AI ব্যবহার করে কম খরচে বড় স্কেলে কাজ করুন।</p>
+                </div>
+                <div class="prep-card">
+                    <h3>🔄 ক্যারিয়ার সুইচ</h3>
+                    <p>যদি আপনার চাকরি লাল তালিকায় থাকে, তাহলে এখনই সবুজ তালিকার দিকে সুইচ করার পরিকল্পনা করুন।</p>
+                </div>
+            </div>
+            
+            <div class="word-box">
+                <h3>📝 সংক্ষিপ্ত পরামর্শ (১০০ শব্দে)</h3>
+                <p>AI যুগে টিকে থাকতে প্রথমে নিজের চাকরির ঝুঁকি বুঝুন। যদি লাল তালিকায় থাকেন, তবে এখনই AI টুলস শেখা শুরু করুন -- ChatGPT, Midjourney, বা GitHub Copilot ব্যবহার করতে শিখুন। মানবিক দক্ষতা যেমন কমিউনিকেশন, লিডারশিপ, ও ইমোশনাল ইন্টেলিজেন্স বাড়ান, কারণ AI এগুলো করতে পারে না। হ্যান্ডস-অন ট্রেড স্কিল যেমন ইলেকট্রিশিয়ান, নার্সিং বা কার্পেন্ট্রি শেখা ভালো বিকল্প। নিয়মিত অনলাইন কোর্স করুন, নেটওয়ার্কিং বাড়ান, এবং ফ্রিল্যান্সিং শুরু করুন। সবচেয়ে গুরুত্বপূর্ণ -- পরিবর্তনকে ভয় না করে আলিঙ্গন করুন।</p>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>📊 ডেটা সোর্স: U.S. Bureau of Labor Statistics (BLS) OEWS 2024, SHRM 2025 Automation/AI Survey, Microsoft Research 2025</p>
+            <p>🤖 AI Job Displacement Risk Analysis | তৈরি করা হয়েছে ২০২৫ সালে</p>
+        </div>
+    </div>
+</body>
+</html>
